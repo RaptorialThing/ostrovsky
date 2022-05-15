@@ -72,14 +72,40 @@ create temp table t5 (
 
 insert into t5 (ACCOUNT_RK, APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK,LOAN_AMOUNT)
 select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, sum(LOAN_AMOUNT)   from t2
-group by APPLICATION_DT,INTERNAL_ORG_ORIGINAL_RK  order by APPLICATION_DT  
+group by APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK  order by APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK;
 ;
 
-select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, LOAN_AMOUNT as '%s'  from t5
+create temp table t6 (
+    ACCOUNT_RK,
+    INTERNAL_ORG_ORIGINAL_RK,
+    LOAN_AMOUNT,
+    APPLICATION_DT 
+);
+
+insert into t6 (ACCOUNT_RK, APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK,LOAN_AMOUNT)
+select 0, data2.APPLICATION_DT, CAST(data1.INTERNAL_ORG_ORIGINAL_RK as INT),  data5.summa as LOAN_AMOUNT from t3 as data1
+left join (select APPLICATION_DT,INTERNAL_ORG_ORIGINAL_RK,  t2.* from   t2 ) as data2
+on data1.INTERNAL_ORG_ORIGINAL_RK = data1.INTERNAL_ORG_ORIGINAL_RK
+inner join (select t5.APPLICATION_DT, t5.INTERNAL_ORG_ORIGINAL_RK, t5.LOAN_AMOUNT as summa, t5.* from t5 as t5) as data5
+on (data5.INTERNAL_ORG_ORIGINAL_RK = data1.INTERNAL_ORG_ORIGINAL_RK) and (data5.APPLICATION_DT = data2.APPLICATION_DT)
+group by data2.APPLICATION_DT, data1.INTERNAL_ORG_ORIGINAL_RK
+order by data2.APPLICATION_DT,data2.INTERNAL_ORG_ORIGINAL_RK, data2.INTERNAL_ORG_ORIGINAL_RK
 ;
 
-""" % column_name_summa,'data.csv']
+
+select data1.APPLICATION_DT, data5.APPLICATION_DT as Date, CAST(data5.INTERNAL_ORG_ORIGINAL_RK as INT) as Pos,
+case  when data1.APPLICATION_DT != data5.APPLICATION_DT then '0' else data5.summa
+end
+from (select * from t1) as data1
+inner join  (select  t6.LOAN_AMOUNT as summa, t6.* from t6) as data5
+on (data5.ACCOUNT_RK = data1.ACCOUNT_RK) 
+group by  data1.APPLICATION_DT,data5.APPLICATION_DT, data5.INTERNAL_ORG_ORIGINAL_RK
+order by  data1.APPLICATION_DT,data5.APPLICATION_DT, data5.INTERNAL_ORG_ORIGINAL_RK
+
+
+""",'data.csv']
 result  = CSVSQL(args_query)
+
 print(result.main())
 
 #select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, sum(LOAN_AMOUNT) as '%s'  from t2 group by APPLICATION_DT,INTERNAL_ORG_ORIGINAL_RK  order by APPLICATION_DT  
@@ -88,3 +114,12 @@ print(result.main())
 # (select ACCOUNT_RK, APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK, LOAN_AMOUNT from t5) as data2
 # on (data1.INTERNAL_ORG_ORIGINAL_RK = data2.INTERNAL_ORG_ORIGINAL_RK)
 # order by data1.APPLICATION_DT, data1.INTERNAL_ORG_ORIGINAL_RK;
+
+# select data2.APPLICATION_DT as Date, CAST(data1.INTERNAL_ORG_ORIGINAL_RK as INT) as Pos,  data5.summa  as '%s'  from t3 as data1
+# left join (select APPLICATION_DT,INTERNAL_ORG_ORIGINAL_RK, t2.* from   t2 ) as data2
+# on data1.INTERNAL_ORG_ORIGINAL_RK = data1.INTERNAL_ORG_ORIGINAL_RK
+# inner join (select t5.APPLICATION_DT, t5.INTERNAL_ORG_ORIGINAL_RK, t5.LOAN_AMOUNT as summa, t5.* from t5 as t5) as data5
+# on (data5.INTERNAL_ORG_ORIGINAL_RK = data1.INTERNAL_ORG_ORIGINAL_RK)
+# group by data2.APPLICATION_DT, data1.INTERNAL_ORG_ORIGINAL_RK
+# order by data2.APPLICATION_DT,data2.INTERNAL_ORG_ORIGINAL_RK, data2.INTERNAL_ORG_ORIGINAL_RK
+# ;
