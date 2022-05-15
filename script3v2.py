@@ -71,13 +71,14 @@ create temp table t5 (
 );
 
 insert into t5 (ACCOUNT_RK, APPLICATION_DT, INTERNAL_ORG_ORIGINAL_RK,LOAN_AMOUNT)
-select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, sum(LOAN_AMOUNT) as '%s'  from t2
+select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, sum(LOAN_AMOUNT)   from t2
 group by APPLICATION_DT,INTERNAL_ORG_ORIGINAL_RK  order by APPLICATION_DT  
 ;
 
-select * from t5;
+select 0, APPLICATION_DT as Date, CAST(INTERNAL_ORG_ORIGINAL_RK as INT) as Pos, LOAN_AMOUNT as '%s'  from t5
+;
 
-""",'data.csv']
+""" % column_name_summa,'data.csv']
 result  = CSVSQL(args_query)
 print(result.main())
 
