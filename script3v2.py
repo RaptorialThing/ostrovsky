@@ -106,5 +106,4 @@ order by  data1.APPLICATION_DT,data5.APPLICATION_DT, data5.INTERNAL_ORG_ORIGINAL
 
 """ % column_name_summa,'data.csv']
 result  = CSVSQL(args_query)
-
 print(result.main())
